@@ -188,27 +188,27 @@ int main(int argc, char *argv[]) {
     // Open config file
     std::ifstream configFile("config.json");
 
-    // If no such file print the message and continue
-    if (!configFile.is_open()) {
-        std::cerr << "No such file as: config.json" << std::endl;
-    }
+    if (configFile.is_open()) {
 
-    // Parse the JSON file
-    json config;
-    try {
-        configFile >> config;
-    } catch (const json::parse_error& e) {
-        std::cerr << "Error parsing config.json: " << e.what() << "\n";
-        return 1;
-    }
+        json config;
+        try {
+            configFile >> config;
+        } catch (const json::parse_error& e) {
+            std::cerr << "Error parsing config.json: " << e.what() << "\n";
+            return 1;
+        }
 
-    K = config.value("warehaouseSize", -1);
-    n = config.value("numberOfConsumers", -1);
-    m = config.value("numberOfProducers", -1);
-    a = config.value("a", -1);
-    b = config.value("b", -1);
-    c = config.value("c", -1);
-    d = config.value("d", -1);
+        K = config.value("warehaouseSize", -1);
+        n = config.value("numberOfConsumers", -1);
+        m = config.value("numberOfProducers", -1);
+        a = config.value("a", -1);
+        b = config.value("b", -1);
+        c = config.value("c", -1);
+        d = config.value("d", -1);
+
+    } else {
+        std::cerr << "No such file as: config.json. Gathering data from console..." << std::endl;
+    }
 
     std::unordered_map<std::string, int*> argMap = {
         {"-K", &K},
@@ -240,37 +240,37 @@ int main(int argc, char *argv[]) {
     }
 
     if (K <= 0) {
-        std::cerr << "K must be a positive integer." << std::endl;
+        std::cerr << "K must be a positive integer. But was given: " << K << std::endl;
         return 1;
     }
 
     if (n <= 0) {
-        std::cerr << "n must be a positive integer." << std::endl;
+        std::cerr << "n must be a positive integer. But was given: " << n << std::endl;
         return 1;
     }
 
     if (a <= 0 || a >= K) {
-        std::cerr << "a must be a positive integer less than K." << std::endl;
+        std::cerr << "a must be a positive integer less than K. But was given: " << a << std::endl;
         return 1;
     }
 
     if (b < a || b >= K) {
-        std::cerr << "b must be a positive integer, greater than or equal to a, and less than K." << std::endl;
+        std::cerr << "b must be a positive integer, greater than or equal to a, and less than K. But was given: " << b << std::endl;
         return 1;
     }
 
     if (m <= 0) {
-        std::cerr << "m must be a positive integer." << std::endl;
+        std::cerr << "m must be a positive integer. But was given: " << m << std::endl;
         return 1;
     } 
 
     if (c <= 0 || c >= K) {
-        std::cerr << "c must be a positive integer less than K." << std::endl;
+        std::cerr << "c must be a positive integer less than K. But was given: " << c << std::endl;
         return 1;
     }
 
     if (d < c || d >= K) {
-        std::cerr << "d must be a positive integer, greater than or equal to c, and less than K." << std::endl;
+        std::cerr << "d must be a positive integer, greater than or equal to c, and less than K. But was given: " << d << std::endl;
         return 1;
     }
 
