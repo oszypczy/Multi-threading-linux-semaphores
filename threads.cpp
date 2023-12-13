@@ -13,11 +13,13 @@
 #include "nlohmann/json.hpp"
 
 int K = -1; // Max size of the buffer
+int n, m = -1; // Number of consumer and producer threads
 int a, b = -1; // Numbers that consumer will choose from
 int c, d = -1; // Numbers that producer will choose from
 pthread_mutex_t mutex;
 sem_t producer;
 sem_t consumer;
+int failures = 0; // Number of failed attempts to consume/produce
 
 using json = nlohmann::json;
 
@@ -107,6 +109,7 @@ void* consumerThread(void* arg) {
         if (warehouse_content >= consumedProducts) {
             setWarehouseContent(warehouse_content - consumedProducts);
             std::string message = generateMessage(threadName, std::time(nullptr), "Managed to consume " + std::to_string(consumedProducts) + " products");
+            failures = 0;
             writeLog(filename, message);
             consumedProducts = generateRandomNumber(a, b);
             message = generateMessage(threadName, std::time(nullptr), "Will consume " + std::to_string(consumedProducts) + " products next time");
@@ -116,6 +119,12 @@ void* consumerThread(void* arg) {
             std::string message = generateMessage(threadName, std::time(nullptr), "Failed to consume " + std::to_string(consumedProducts) + " products");
             writeLog(filename, message);
             consumerTurn = false;
+            failures++;
+            if (failures > n + m) {
+                consumedProducts = generateRandomNumber(a, b);
+                std::string message = generateMessage(threadName, std::time(nullptr), "Warehouse jammed. Will try to consume " + std::to_string(consumedProducts) + " products next time");
+                writeLog(filename, message);
+            }
         }
         sleep(1);
         pthread_mutex_unlock(&mutex);
@@ -145,6 +154,7 @@ void* producerThread(void* arg) {
         if (warehouse_content + producedProducts <= K) {
             setWarehouseContent(warehouse_content + producedProducts);
             std::string message = generateMessage(threadName, std::time(nullptr), "Managed to produce " + std::to_string(producedProducts) + " products");
+            failures = 0;
             writeLog(filename, message);
             producedProducts = generateRandomNumber(c, d);
             writeLog(filename, generateMessage(threadName, std::time(nullptr), "Will produce " + std::to_string(producedProducts)) + " products next time");
@@ -153,6 +163,12 @@ void* producerThread(void* arg) {
             std::string message = generateMessage(threadName, std::time(nullptr), "Failed to produce " + std::to_string(producedProducts) + " products");
             writeLog(filename, message);
             producerTurn = false;
+            failures++;
+            if (failures > n + m) {
+                producedProducts = generateRandomNumber(c, d);
+                std::string message = generateMessage(threadName, std::time(nullptr), "Warehouse jammed. Will try to produce " + std::to_string(producedProducts) + " products next time");
+                writeLog(filename, message);
+            }
         }
         sleep(1);
         pthread_mutex_unlock(&mutex);
@@ -169,9 +185,13 @@ void* producerThread(void* arg) {
 
 int main(int argc, char *argv[]) {
 
-    int n, m = -1;
-
+    // Open config file
     std::ifstream configFile("config.json");
+
+    // If no such file print the message and continue
+    if (!configFile.is_open()) {
+        std::cerr << "No such file as: config.json" << std::endl;
+    }
 
     // Parse the JSON file
     json config;
