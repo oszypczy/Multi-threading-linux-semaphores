@@ -249,12 +249,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (a <= 0 || a >= K) {
+    if (a <= 0 || a > K) {
         std::cerr << "a must be a positive integer less than K. But was given: " << a << std::endl;
         return 1;
     }
 
-    if (b < a || b >= K) {
+    if (b < a || b > K) {
         std::cerr << "b must be a positive integer, greater than or equal to a, and less than K. But was given: " << b << std::endl;
         return 1;
     }
@@ -264,12 +264,12 @@ int main(int argc, char *argv[]) {
         return 1;
     } 
 
-    if (c <= 0 || c >= K) {
+    if (c <= 0 || c > K) {
         std::cerr << "c must be a positive integer less than K. But was given: " << c << std::endl;
         return 1;
     }
 
-    if (d < c || d >= K) {
+    if (d < c || d > K) {
         std::cerr << "d must be a positive integer, greater than or equal to c, and less than K. But was given: " << d << std::endl;
         return 1;
     }
